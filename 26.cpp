@@ -30,7 +30,8 @@ int count_foreign_words_in_text(const std::string& text) {
 
 int main(int argc, char** argv) {
     int myid, n_proc;
-    double start_time, end_time, parallel_time;
+    double start_time, end_time, parallel_time, total_time;
+    double t0, t1, t2; // временные метки для обмена данными
 
     MPI_Init(&argc, &argv);
     MPI_Comm_size(MPI_COMM_WORLD, &n_proc);
@@ -62,7 +63,7 @@ int main(int argc, char** argv) {
         }
     }
 
-    start_time = MPI_Wtime();
+    start_time = MPI_Wtime(); 
 
     int total_lines = lines.size();
     MPI_Bcast(&total_lines, 1, MPI_INT, 0, MPI_COMM_WORLD);
@@ -74,6 +75,7 @@ int main(int argc, char** argv) {
 
     std::string local_text;
     if (myid == 0) {
+        t0 = MPI_Wtime(); // Начало времени обмена данными
         for (int i = 1; i < n_proc; ++i) {
             int i_start = i * lines_per_proc + std::min(i, remainder);
             int i_end = i_start + lines_per_proc + (i < remainder ? 1 : 0);
@@ -88,6 +90,7 @@ int main(int argc, char** argv) {
         for (int i = start_line; i < end_line; ++i) {
             local_text += lines[i] + "\n";
         }
+        t1 = MPI_Wtime(); // Время окончания отправки данных
     }
     else {
         for (int i = start_line; i < end_line; ++i) {
@@ -99,6 +102,7 @@ int main(int argc, char** argv) {
             local_text += std::string(line_buffer.data()) + "\n";
         }
     }
+    t2 = MPI_Wtime(); // Время окончания получения данных
 
     parallel_time = MPI_Wtime();
     int local_count = count_foreign_words_in_text(local_text);
@@ -107,11 +111,23 @@ int main(int argc, char** argv) {
     int global_count = 0;
     MPI_Reduce(&local_count, &global_count, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
 
+
     if (myid == 0) {
-        end_time = MPI_Wtime();
+        total_time = MPI_Wtime() - start_time;
         std::cout << "Total foreign words: " << global_count << std::endl;
-        std::cout << "Total time: " << (end_time - start_time) << " seconds" << std::endl;
-        std::cout << "Parallel computation time: " << parallel_time << " seconds" << std::endl;
+        std::cout << "Total time: " << (total_time) << " seconds" << std::endl;
+        std::cout << "Data sending time (t0 to t1): " << t1 - t0 << " seconds" << std::endl;
+        std::cout << "Data receiving time (t1 to t2): " << t2 - t1 << " seconds" << std::endl;
+
+        std::vector<double> proc_times(n_proc);
+        proc_times[0] = total_time;
+        MPI_Gather(&parallel_time, 1, MPI_DOUBLE, proc_times.data(), 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+        for (int i = 0; i < n_proc; ++i) {
+            std::cout << "Process " << i << " parallel computation time: " << proc_times[i] << " seconds" << std::endl;
+        }
+    }
+    else {
+        MPI_Gather(&parallel_time, 1, MPI_DOUBLE, nullptr, 0, MPI_DOUBLE, 0, MPI_COMM_WORLD);
     }
 
     MPI_Finalize();
