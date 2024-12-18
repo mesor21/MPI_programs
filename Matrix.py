@@ -1,8 +1,5 @@
 import random
-<<<<<<< HEAD
 import sys
-=======
->>>>>>> ba0e465651bd51f5f614571c4bb9ebe16afd715b
 
 def generate_matrix_file(filename, rows, cols, min_value=1, max_value=15):
     with open(filename, 'w') as f:
@@ -10,8 +7,6 @@ def generate_matrix_file(filename, rows, cols, min_value=1, max_value=15):
         for _ in range(rows):
             row = [random.randint(min_value, max_value) for _ in range(cols)]
             f.write(" ".join(map(str, row)) + "\n")
-
-<<<<<<< HEAD
 
 if __name__ == "__main__":
     if len(sys.argv) != 5:
@@ -51,13 +46,3 @@ if __name__ == "__main__":
     
     generate_matrix_file(file_name, N, M, max_value=max)
     print(f"Матрица размером {N}x{M} успешно сохранена в файл '{file_name}'.")
-=======
-# Задайте размеры матрицы
-N = 48 # Количество строк
-M = 1000  # Количество столбцов
-filename = "matrix.txt"
-
-generate_matrix_file(filename, N, M)
-
-print(f"Матрица размером {N}x{M} успешно сохранена в файл '{filename}'.")
->>>>>>> ba0e465651bd51f5f614571c4bb9ebe16afd715b

@@ -9,14 +9,15 @@
 using namespace std;
 
 int main(int argc, char** argv) {
-    MPI_Init(&argc, &argv);
-    MPI_Comm_rank(MPI_COMM_WORLD, &myid);
-    MPI_Comm_size(MPI_COMM_WORLD, &n_proc);
-	
-	int myid, n_proc;
+    int myid, n_proc;
     double start_time, end_time, send_time_start_1, send_time_start_2, send_time_start_3, send_time_end_1, send_time_end_2, parallel_time;
     int N = 0, M = 0; // Размеры двумерного массива
     vector<vector<int>> matrix;
+
+
+    MPI_Init(&argc, &argv);
+    MPI_Comm_rank(MPI_COMM_WORLD, &myid);
+    MPI_Comm_size(MPI_COMM_WORLD, &n_proc);
 
     // Процесс 0 инициализирует массив
     if (myid == 0) {
@@ -70,7 +71,7 @@ int main(int argc, char** argv) {
         }
         /*cout << "Flat matrix to Scatter:" << endl;
         for (int i = 0; i < N * M; ++i) {
-            cout << flat_matrix[i] << " "; 
+            cout << flat_matrix[i] << " ";
         }
         cout << endl << endl;*/
     }
@@ -106,16 +107,18 @@ int main(int argc, char** argv) {
     // Процесс 0 вычисляет произведение всех максимумов
     if (myid == 0) {
         long long product = 1;
-        cout << endl;
-        cout << "Maximum:" << endl;
+        /*cout << endl;
+        cout << "Maximum:" << endl;*/
         for (int i = 0; i < N; ++i) {
-            cout << global_max_values[i] << " * ";
+            //cout << global_max_values[i] << " * ";
             product *= global_max_values[i];
         }
         cout << endl;
         cout << "Product of maximum values in each row: " << product << endl;
         cout << "Total processing time: " << setprecision(6) << end_time - start_time << " seconds" << endl;
-        cout << "Data sending time: " << setprecision(6) << (send_time_end_1 - send_time_start_1) + (send_time_end_2 - send_time_start_2) + (end_time -send_time_start_3) << " seconds" << endl;
+        cout << "Data sending time MPI_Bcast: " << setprecision(6) << (send_time_end_1 - send_time_start_1) << " seconds" << endl;
+        cout << "Data sending time MPI_Scatter: " << setprecision(6) << (send_time_end_2 - send_time_start_2) << " seconds" << endl;
+        cout << "Data sending time MPI_Gather: " << setprecision(6) << (end_time - send_time_start_3) << " seconds" << endl;
         cout << "Processing time for process 0: " << parallel_time << " seconds" << endl;
     }
 

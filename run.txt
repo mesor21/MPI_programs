@@ -4,10 +4,11 @@ git pull
 A
 python3 for_test_data26.py text.txt 10
 mpic++ -std=c++11 -o prog26 26.2.cpp
-sbatch a.slarm text.txt 36
-cat $(pwd)/26.out
+sbatch a.slurm text.txt 48
+cat ../26.out
 
 D
 python Matrix.py test.txt 100 1000 10
 mpic++ -std=c++11 -o prog13 13.cpp
-sbatch d.slarm test_file.txt 36
+sbatch d.slurm test_file.txt 48
+cat ../13.out
